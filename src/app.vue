@@ -4,16 +4,16 @@
   </div>
 </template>
 <script>
-  export default {
-    data: function () {
-      return {
-        name:''
-      };
-    },
-    methods:{
-      getName(){
-        return this.name;
-      }
+export default {
+  data: function() {
+    return {
+      name: ""
+    };
+  },
+  methods: {
+    getName() {
+      return this.name;
     }
-  };
+  }
+};
 </script>

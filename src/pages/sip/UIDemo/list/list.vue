@@ -8,17 +8,25 @@
 
     <Row>
       <Col span="24">
-      <Button ><Icon  type="ios-refresh"
-        size="24" /></Button>
-     
+      <Button>
+        <Icon
+          type="ios-refresh"
+          size="24"
+        /></Button>
+
       <Button
         type="primary"
         @click="createNewPage"
       >
         <Icon type="md-create" /> 创建
       </Button>
-       <Button type="info" ghost><Icon type="ios-play-outline" /> 开机 </Button>
-      <Button disabled><Icon type="md-power" /> 关机 </Button>
+      <Button
+        type="info"
+        ghost
+      >
+        <Icon type="ios-play-outline" /> 开机 </Button>
+      <Button disabled>
+        <Icon type="md-power" /> 关机 </Button>
       <Dropdown
         trigger="click"
         @on-click="changeMenu"
@@ -115,10 +123,14 @@
       :columns="tableColumns2"
       :data="tableData2"
     ></Table>
-   <div style="margin: 10px;overflow: hidden">
-        <div style="float: right;">
-            <Page :total="100" :current="1" @on-change="changePage"></Page>
-        </div>
+    <div style="margin: 10px;overflow: hidden">
+      <div style="float: right;">
+        <Page
+          :total="100"
+          :current="1"
+          @on-change="changePage"
+        ></Page>
+      </div>
     </div>
     <Modal
       :title="Title"
@@ -150,14 +162,11 @@
 
       <Input
         v-model="desc"
-        type="textarea"  style="height:500px"
+        type="textarea"
+        style="height:500px"
         :autosize="{minRows: 2,maxRows: 5}"
       ></Input>
-    <div slot="footer">
-       <Button type="error" size="small"  >Delete</Button>
-            <Button type="error" size="small"  >Delete</Button>
-             <Button type="error" size="lasmallge"  >Delete</Button>
-        </div>
+
     </Modal>
 
   </div>
@@ -231,7 +240,7 @@ export default {
     },
     changeMenu(name) {
       if (name == "startup" && !this.startupDisabled) {
-            this.startup();
+        this.startup();
       } else if (name == "shutdown") {
         this.shutdown();
       }

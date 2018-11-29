@@ -42,8 +42,9 @@
           >开机</DropdownItem>
           <DropdownItem name="shutdown">关机</DropdownItem>
           <DropdownItem :disabled="aaa">资源移交</DropdownItem>
+          <DropdownItem name="destroy">销毁</DropdownItem>
           <DropdownItem>销毁保护</DropdownItem>
-          <DropdownItem divided>资源标签</DropdownItem>
+          <DropdownItem name="tags">资源标签</DropdownItem>
           <DropdownItem divided>制作镜像</DropdownItem>
         </DropdownMenu>
       </Dropdown>
@@ -132,6 +133,15 @@
         ></Page>
       </div>
     </div>
+
+    <Modal
+      v-model="tagsSet"
+      title="标签设置"
+    >
+      <tags></tags>
+
+    </Modal>
+
     <Modal
       :title="Title"
       v-model="modal8"
@@ -173,10 +183,14 @@
 
 </template>
 <script>
-// import formUI from
+import Tags from "../../components/tags";
 export default {
+  components: {
+    Tags
+  },
   data: function() {
     return {
+      tagsSet: false,
       tags: [
         {
           name: "拉面",
@@ -243,7 +257,16 @@ export default {
         this.startup();
       } else if (name == "shutdown") {
         this.shutdown();
+      } else if (name == "destroy") {
+        this.destroy();
       }
+    },
+    destroy() {
+      this.tagsSet = true;
+      // this.$Notice.warning({
+      //   title: "销毁",
+      //   desc: "销毁前请关机 "
+      // });
     },
     startup() {
       const selectList =

@@ -43,7 +43,7 @@ import { SipHookModelRouter } from "@libs/sip/components";
 export default {
   components: {
     "sip-sidebar": sipSidebar,
-    'sip-contextmenu': SipContextmenu
+    "sip-contextmenu": SipContextmenu
   },
   data: function() {
     return {
@@ -51,28 +51,46 @@ export default {
       keepAlives: [],
       menu: [
         {
-          title: "test-http",
+          title: "demo",
           id: "test-2222",
           children: [
             {
               title: "test-http",
               id: "test-http11111",
-              url: "#/pages/sip/test/test-http"
+              url: "#/sip/test/test-http"
             },
             {
               title: "test-router1",
               id: "test-router-11111",
-              url: "#/pages/sip/test/test-router"
+              url: "#/sip/test/test-router"
             },
             {
               title: "test-modal",
               id: "test-modal-11111",
-              url: "#/pages/sip/test/test-modal"
+              url: "#/sip/test/test-modal"
             },
             {
               title: "test-demo-list",
               id: "test-demo-list",
-              url: "#/pages/sip/UIDemo/list"
+              url: "#/sip/UIDemo/list"
+            }
+          ]
+        },
+        {
+          title: "云服务",
+          id: "servcie-main",
+          children: [
+            {
+              title: "存储",
+              id: "volume",
+              // url: "#/sip/test/test-http",
+              children: [
+                {
+                  title: "存储",
+                  id: "volumn-list",
+                  url: "#/sip/iaas/volume/volume-list"
+                }
+              ]
             }
           ]
         }
@@ -97,6 +115,8 @@ export default {
     /**sip 使用 */
     this.$router.beforeEach((to, from, next) => {
       SipHookModelRouter(to, from, next);
+    });
+    this.$router.afterEach(route => {
     });
     this.$root.$sipHome = this;
     /**End sip 使用 */
@@ -124,7 +144,7 @@ export default {
         }, 1);
       });
     },
-    sipShowContextMenu(e, items){
+    sipShowContextMenu(e, items) {
       let contextMenu = this.$refs.contextMenu;
       return contextMenu.show(e, items);
     },
@@ -135,14 +155,6 @@ export default {
       }
       types = types.split(",");
       return _.includes(types, type);
-    },
-    isAutoPages() {
-      return false;
-      var key = this.$route.path;
-      if (_.startsWith(key, "/pages/")) {
-        return true;
-      }
-      return false;
     }
   }
 };

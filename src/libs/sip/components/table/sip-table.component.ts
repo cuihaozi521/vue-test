@@ -1,8 +1,8 @@
 import { Table } from '*.vue';
 import _ from 'lodash';
 import { SipVueDestroyed, SipVueRef } from '../../vue-extends';
-import { SipVueMounted } from '../../vue-extends/decorators/sip-vue-lifecycle';
-import { SipVueComponent, SipVueOn, SipVueProp } from '../../vue-extends/decorators/sip-vue-property-decorator';
+import { SipInit, SipReady } from '../../vue-extends/decorators/sip-vue-lifecycle';
+import { SipVueComponent, SipVueEvent, SipVueProp } from '../../vue-extends/decorators/sip-vue-property-decorator';
 import { SipComponent } from '../../vue-extends/sip-component';
 import { SipTableColumn } from './sip-table-column';
 import { SipTableManager } from './sip-table.manager';
@@ -69,7 +69,12 @@ export default class SipTableComponent extends SipComponent {
         return slots;
     }
 
-    @SipVueMounted()
+    @SipInit()
+    private _sip_table_init(){
+
+    }
+
+    @SipReady()
     private _sip_table_created() {
         this.manager._init(this.table, this._getColumnSlotScopes());
     }
@@ -79,7 +84,7 @@ export default class SipTableComponent extends SipComponent {
         this.manager.$destroy();
     }
 
-    @SipVueOn('contextmenu', true)
+    @SipVueEvent('contextmenu', true)
     private _contextmenu(e: MouseEvent) {
         let contextmenus = this.manager.contextmenu();
         if (contextmenus && contextmenus.length <= 0) return;

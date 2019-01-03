@@ -15,12 +15,12 @@ export interface SipValidatorRule {
     /** 使用类型 string 或 array */
     len?: number;
     /** 取消验证 */
-    cancel?:boolean;
+    cancel?: boolean;
     /** 使用类型 enum  */
     enum?: any[];
     /** 验证前转换值 */
     transform?: <T>(value: T) => T;
-    /** 错误信息 */
+    /** 设置错误信息 */
     message?: string;
     /**
      * 自定义验证内容
@@ -33,8 +33,11 @@ export interface SipValidatorRule {
     validator?: SipValidatorFunction;
 }
 
-export type SipValidatorDescriptorItem = SipValidatorRule | SipValidatorFunction;
+export type SipValidatorDescriptorItem = SipValidatorRule | SipValidatorFunction | string;
 
 export interface SipValidatorDescriptor {
+    $messages?: any[];
+    $results?: any[];
+    $errInfo?:any;
     [key: string]: SipValidatorDescriptorItem | SipValidatorDescriptorItem[];
 }

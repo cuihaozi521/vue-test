@@ -124,7 +124,7 @@ export default class SipSidebarComponent extends SipComponent {
             } else {
                 toPath = "/";
             }
-            console.log('toPath', toPath, this.localMenus);
+            this.$logger.debug('toPath', toPath, this.localMenus);
             this.$open(toPath);
             // if (context.getWebContext().inSamePage(selectedMenu.url)) {
             //     var toPath = selectedMenu.url;

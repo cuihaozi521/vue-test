@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import querystring from 'querystring';
 
 let stringEmpty = "",
@@ -233,9 +234,65 @@ export class SipHelper {
         let query: object = queryStr ? querystring.parse(queryStr) : {};
         return query[name] || '';
     }
+
+    static getFirstProp(list: any[], key: string, defaultValue: any): any {
+        if (!list) return defaultValue || '';
+        let value = '';
+        SipHelper.each(list, function (item) {
+            if (item[key] == defaultValue) {
+                value = defaultValue;
+                return false;
+            }
+        });
+        if (!value) value = list.length > 0 ? list[0][key] : ''
+        return value || defaultValue;
+
+    }
+
+    /**
+     * 获取autoSelect value
+     * @param list 
+     * @param prop 
+     * @param value 
+     * @param auto 
+     */
+    static autoSelect<T=any>(list: any[], prop: string, value: T, auto: boolean): T {
+        let newValue: any = value;
+        if (list.length == 0) {
+            newValue = '';
+        } else if (auto) {
+            newValue = SipHelper.getFirstProp(list, prop, newValue);
+        }
+        return newValue;
+    }
+
+    static deserializeVueObject(p) {
+        if (_.isArguments(p)) {
+            return _deserializeVueList(p);
+        } else {
+            if (!p || (!_.isPlainObject(p) && !_.isArray(p)) || !('__ob__' in p)) return p;
+            if (_.isArray(p)) {
+                return _deserializeVueList(p);
+            } else {
+                let obj = {};
+                SipHelper.eachProp(p, function (item, key) {
+                    obj[key] = SipHelper.deserializeVueObject(item);
+                });
+                return obj;
+            }
+        }
+    }
 }
 let _tick = 0;
 
 function _querystring(url: string): string[] {
     return url ? url.split('?') : ['', ''];
+}
+
+function _deserializeVueList(p){
+    let list = [];
+    SipHelper.each(p, function (item) {
+        list.push(SipHelper.deserializeVueObject(item));
+    });
+    return list;
 }

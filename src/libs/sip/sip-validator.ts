@@ -1,29 +1,68 @@
 import _ from 'lodash';
+import { SipHelper } from './base/sip-helper';
+import { SipConfig } from './sip-config';
 import { SipValidatorDescriptor, SipValidatorDescriptorItem, SipValidatorFunction, SipValidatorRule } from './vue-extends/sip-validator-descriptor';
 
+
+type triggerType = 'change' | 'blur';
+
 export class SipValidator {
-    static createDescriptor(p: SipValidatorDescriptor, trigger: 'change' | 'blur' = 'change'): SipValidatorDescriptor {
-        let descriptor = {};
+    static createDescriptor(p: SipValidatorDescriptor, trigger?: triggerType | triggerType[]): SipValidatorDescriptor {
+        if (!trigger) trigger = SipConfig.form.validatorTrigger as any[];
+        if (trigger == 'all') trigger = ['blur', 'change'];
+        let descriptor: SipValidatorDescriptor = {};
+        let _results = {};
+        Object.defineProperty(descriptor, '$messages', {
+            enumerable: false,
+            configurable: false,
+            get: function () {
+                let messages = [];
+                SipHelper.eachProp(_results, function (item, key) {
+                    if (item) item = messages.push(item);
+                });
+                return messages;
+            }
+        });
+        Object.defineProperty(descriptor, '$results', {
+            enumerable: false,
+            configurable: false,
+            get: function () {
+                return _results;
+            }
+        });
+        Object.defineProperty(descriptor, '$errInfo', {
+            enumerable: false,
+            configurable: false,
+            get: function () {
+                return SipConfig.validatorMessage(descriptor);
+            }
+        });
         _.forEach(p, function (rule, key) {
             if (_.isArray(rule)) {
                 let newRule: SipValidatorRule = {};
                 let validators = [];
-                _.forEach(rule, function (ruleItem: SipValidatorRule) {
+                _.forEach(rule, function (ruleItem: SipValidatorRule, index) {
                     if (_.isFunction(ruleItem))
                         validators.push(ruleItem);
                     else {
                         if (ruleItem.validator) validators.push(ruleItem.validator);
-                        _.assign(newRule, ruleItem);
+                        _.assign(newRule, _.isString(ruleItem) ? { message: ruleItem } : ruleItem);
                     }
                 });
                 if (validators.length > 0) {
                     //合并处理validator
-                    newRule.validator = SipValidator.mergeValidatorFunction(validators, newRule.message);
+                    newRule.validator = SipValidator.mergeValidatorFunction(validators, newRule.message, function (err) {
+                        _results[key] = err;
+                    });
                 }
                 if (!newRule['trigger']) newRule['trigger'] = trigger;
                 descriptor[key] = newRule;
             }
             else {
+                if (_.isString(rule))
+                    rule = {
+                        message: rule
+                    };
                 if (!rule['trigger']) rule['trigger'] = trigger;
                 descriptor[key] = rule;
             }
@@ -31,7 +70,7 @@ export class SipValidator {
         return descriptor;
     }
 
-    static mergeValidatorFunction(args: any[], err?: string): SipValidatorFunction {
+    static mergeValidatorFunction(args: any[], err?: string, callback2?: (err?: string) => void): SipValidatorFunction {
         let len = args.length;
         return function (rule, value, callback, source, options) {
             let pos = len;
@@ -43,10 +82,15 @@ export class SipValidator {
                     !!errItem && errList.push(_.isString(errItem) ? errItem : errItem.message);
                     // console.log('rule', rule);
                     if (pos == 0 || rule.cancel === true) {
-                        if (errList.length > 0)
-                            callback.call(this, new Error(err || errList.join(', ')));
-                        else
+                        if (errList.length > 0) {
+                            let message = err || errList.join(', ');
+                            callback2 && callback2(message);
+                            callback.call(this, new Error(message));
+                        }
+                        else {
+                            callback2 && callback2('');
                             callback.call(this);
+                        }
                     }
                 }, source, options);
             });
@@ -65,8 +109,7 @@ export class SipValidator {
 
     static min(min: number, err?: string): SipValidatorDescriptorItem {
         return function (rule, value, callback, source, options) {
-            let len = _.toString(value).length;
-            if (!_.inRange(value, min))
+            if (!_.inRange(value, min, Number.MAX_VALUE))
                 callback(err || `最小值${min}`);
             else
                 callback();
@@ -178,12 +221,12 @@ export class SipValidator {
         return SipValidator.pattern(/^(http|https|ftp):\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)(:(\d+))?\/?/i, err || '必须为URL');
     }
 
-    
+
     /** 身份证 */
     static identity(err?: string): SipValidatorDescriptorItem {
         return SipValidator.pattern(/\d{15}|\d{18}/, err || '必须为身份证');
     }
-    
+
     /** 不允许输入字母和数字之外的特殊字符 */
     static password(err?: string): SipValidatorDescriptorItem {
         return SipValidator.pattern(/^[0-9a-zA-Z\-\.+!@#$%\^&*~]+$/, err || '不允许输入字母和数字之外的特殊字符');

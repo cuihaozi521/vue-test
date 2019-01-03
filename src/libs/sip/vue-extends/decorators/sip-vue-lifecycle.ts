@@ -106,7 +106,7 @@ export function SipInit() {
         SipMixinLife(target, 'created', function () {
             _promise = Promise.all([_promise, $SipDoPreLoad(target, this)]);
             let component = this.$component;
-            let fn = function(){
+            let fn = function () {
                 _promise = null;
                 component.$isInited = true;
                 target[propKey].call(this);
@@ -121,12 +121,24 @@ export function SipInit() {
 export function SipReady() {
 
     return function (target: any, propKey: string) {
+        SipMixinLife(target, 'created', function () {
+            _promise = Promise.all([_promise, $SipDoPreLoad(target, this)]);
+            let component = this.$component;
+            let fn = function () {
+                _promise = null;
+                component.$isInited = true;
+                component.$emit('onInit');
+            }.bind(this);
+            _promise.then(fn, fn);
+        });
         SipMixinLife(target, 'mounted', function () {
             let component = this.$component;
-            component.$onInit(function(){
-                component.$isReady = true;
-                target[propKey].call(this);
-                component.$emit('onReady');
+            component.$onInit(function () {
+                setTimeout(() => {
+                    component.$isReady = true;
+                    target[propKey].call(this);
+                    component.$emit('onReady');
+                },1);
             }.bind(this));
         });
     };

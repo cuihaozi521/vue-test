@@ -38,7 +38,7 @@ export class SipTableManager<T=any> implements SipTableOption<T> {
             loading: false,
             datas: [],
             showPageBar: true,
-            contextmenu:function(){}
+            contextmenu: function () { }
         }, SipConfig.table, _.cloneDeep(option));
         option.columns = [];
 
@@ -78,7 +78,7 @@ export class SipTableManager<T=any> implements SipTableOption<T> {
                         return h('div', [solt.$sipTableSlotScope(p)]);
 
                     } else {
-                        return h('div', cellValue);
+                        return h('div', cellText || cellValue);
                     }
                 };
             }
@@ -147,6 +147,7 @@ export class SipTableManager<T=any> implements SipTableOption<T> {
         let params: any = _.cloneDeep(this._searchParams);
         if (rest) {
             this.loading = true;
+            let selects = this.getSelectFirst();
             rest(params || {}, {
                 pageIndex: this.pageIndex,
                 pageSize: this.pageSize,
@@ -157,6 +158,12 @@ export class SipTableManager<T=any> implements SipTableOption<T> {
                 this.total = rs.total || 0;
                 // this.pageIndex = rs.pageIndex || 1;
                 this.loading = false;
+                if (selects) {
+                    this.table.$nextTick(() => {
+                        this._event.$emit('onSelectChanged', []);
+                        this.setSelects([], false);
+                    });
+                }
             });
         }
     }
@@ -222,7 +229,7 @@ export class SipTableManager<T=any> implements SipTableOption<T> {
     sortName: string;
     sortOrder: SipSortOrder;
 
-    contextmenu?:()=>SipContextmenuItem<T[]>[];
+    contextmenu?: () => SipContextmenuItem<T[]>[];
 
     private _datas: any[];
     public get datas(): any[] {

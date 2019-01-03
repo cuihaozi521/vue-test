@@ -5,11 +5,10 @@ import { SipDecorator } from './sip-decorators';
 export interface SipInjectableParams {
     /**
      * 注入到域，默认为business
-     * root：根（全局）
      * business：业务组件（如page, modal）
      * component：组件
      * */
-    scope?: 'business' | 'root' | 'component'
+    scope?: 'business' | 'component' //去除root，原因是数据污染
 }
 
 interface SipInjectableParamReturn extends SipInjectableParams {

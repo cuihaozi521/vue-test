@@ -1,3 +1,4 @@
+import { SipHelper } from '../base/sip-helper';
 import { SipConfig } from '../sip-config';
 import { SipInjectable } from "../vue-extends/decorators/sip-inject";
 import { SipServiceBase } from '../vue-extends/sip-service-base';
@@ -10,7 +11,11 @@ const DEFAULT_OPTIONS: SipLoggerOptions = {
   globalAs: "sipLogger"
 };
 
-@SipInjectable({ scope: 'root' })
+function deserializeVueObject(p){
+  return SipConfig.env == 'production' ? p : SipHelper.deserializeVueObject(p);
+}
+
+@SipInjectable({ scope: "business" })
 export class SipLoggerService extends SipServiceBase {
   private _level: SipLoggerLevel;
   private _globalAs: string;
@@ -31,23 +36,23 @@ export class SipLoggerService extends SipServiceBase {
   }
 
   error(message?: any, ...optionalParams: any[]) {
-    this.isErrorEnabled() && console.error.apply(console, arguments);
+    this.isErrorEnabled() && console.error.apply(console, deserializeVueObject(arguments));
   }
 
   warn(message?: any, ...optionalParams: any[]) {
-    this.isWarnEnabled() && console.warn.apply(console, arguments);
+    this.isWarnEnabled() && console.warn.apply(console, deserializeVueObject(arguments));
   }
 
   info(message?: any, ...optionalParams: any[]) {
-    this.isInfoEnabled() && console.info.apply(console, arguments);
+    this.isInfoEnabled() && console.info.apply(console, deserializeVueObject(arguments));
   }
 
   log(message?: any, ...optionalParams: any[]) {
-    this.isLogEnabled() && console.log.apply(console, arguments);
+    this.isLogEnabled() && console.log.apply(console, deserializeVueObject(arguments));
   }
 
   debug(message?: any, ...optionalParams: any[]) {
-    this.isDebugEnabled() && console.warn.apply(console, arguments);
+    this.isDebugEnabled() && console.warn.apply(console, deserializeVueObject(arguments));
   }
 
   debugger(){

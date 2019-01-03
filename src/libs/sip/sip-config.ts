@@ -1,5 +1,6 @@
 import { SipLoggerLevel } from "./logger/sip-logger-level";
 import { SipLoggerOptions } from "./logger/sip-logger-options";
+import { SipValidatorDescriptor } from "./vue-extends/sip-validator-descriptor";
 
 /** sip配置 */
 export class SipConfig {
@@ -13,6 +14,11 @@ export class SipConfig {
         global: true,
         globalAs: "sipLogger"
     };
+
+    /** 处理验证器 $errInfo */
+    static validatorMessage(descriptor: SipValidatorDescriptor): string {
+        return ['验证失败：', descriptor.$messages[0]].join('');
+    }
 
     /** sip-access 处理Dom */
     static accessDisabled(el: HTMLElement, type: 'disabled' | 'hide', disabled: boolean) {
@@ -40,5 +46,13 @@ export class SipConfig {
         multipleSelection: true,
         /**选择方式, select：选择模式，normal正常操作 */
         selectMode: 'normal' //'select' | 'normal'
+    };
+
+
+    static form = {
+        /** form label宽度 */
+        labelWidth: 120,
+        /** 验证时机 'change' | 'blur' */
+        validatorTrigger: ['blur', 'change']
     };
 }

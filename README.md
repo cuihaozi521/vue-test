@@ -2,18 +2,30 @@
 
 > api-console for vue2
 
-## Build Setup
+## 安装工程环境
 
 ``` bash
 # install dependencies
 npm install
+```
 
-# serve with hot reload at localhost:9696
-npm run dev
+## 启动开发环境
 
-# build for production with minification
+``` bash
+# 启动开发环境，webserver: http://localhost:9596
+npm start
+```
+
+## 发布(build)
+
+``` bash
+# 发布
 npm run build
+```
 
+## 其他
+
+``` bash
 # build for production and view the bundle analyzer report
 npm run build --report
 
@@ -27,13 +39,17 @@ npm run e2e
 npm test
 ```
 
-For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+## 相关资料
 
-## window 特殊安装
-
-```
-npm install --global --production windows-build-tools
-```
+- [https://dev.bingocc.com:8443/mvue/](https://dev.bingocc.com:8443/mvue-doc/)
+- [vue文档](https://cn.vuejs.org/v2/guide/)
+- [Vue Router](https://router.vuejs.org/zh/)
+- [iview](https://www.iviewui.com/)
+- [Vuex](https://vuex.vuejs.org/zh/)
+- [vuex-class](https://github.com/ktsn/vuex-class/)
+- [vue-class-component](https://github.com/vuejs/vue-class-component)
+- [vue-property-decorator](https://github.com/kaorun343/vue-property-decorator)
+- [lodash](https://lodash.com/docs/)
 
 ## 使用 TypeScript
 
@@ -66,7 +82,7 @@ vueLoaderConfig.ts = 'ts-loader';
 
 ```javascript
 // routes=routes.replace(/\"##require_placeholder_begin##/g,'require').replace(/##require_placeholder_end##\"/g,'');
-    
+
     routes=routes.replace(/\"##require_placeholder_begin##/g,`function (cb) {
         require.ensure([], function () {
             cb(require`).replace(/\'\)##require_placeholder_end##\"/g,`.vue'));

@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import Vue, { ComponentOptions } from 'vue';
+import Vue, { ComponentOptions, PropOptions, WatchOptions } from 'vue';
 import Component from 'vue-class-component';
 import { VueClass } from 'vue-class-component/lib/declarations';
-import { Emit, Inject, Model, Prop, Provide, Watch } from 'vue-property-decorator';
+import { Constructor, Inject, Provide } from 'vue-property-decorator';
 import { Action, Getter, Mutation, State } from 'vuex-class';
 //https://github.com/vuejs/vue-class-component
 
@@ -13,10 +13,32 @@ export type SipMixin = ComponentOptions<Vue> | typeof Vue;
 export interface SipVueComponentOptions<V extends Vue> extends ComponentOptions<V> {
 }
 
+function _makeMixins(mixins, outMixns: any[]) {
+    _.each(mixins, function (item) {
+        outMixns.push(item);
+        if (item.mixins) {
+            _makeMixins(item.mixins.slice().reverse(), outMixns);
+        }
+    });
+}
+
+function _mergeMixins(mixins: any[]): any[] {
+    let outMixns = [];
+    _makeMixins(mixins.slice().reverse(), outMixns);
+    outMixns = _.uniq(_.reverse(outMixns));
+    outMixns = _.map(outMixns, function (item) {
+        return _.assign({}, item, { mixins: null });
+    });
+    return outMixns;
+}
+
 export function SipVueComponent<V extends Vue>(options: SipVueComponentOptions<V> & ThisType<V>): <VC extends VueClass<V>>(target: VC) => VC {
     return function (target: Function) {
         let prototype = target.prototype;
         options.mixins = (prototype._sip_mixins || []).concat(options.mixins || []);
+        let outMixins = _mergeMixins(options.mixins);
+        // console.log('mixins', options.mixins, outMixins);
+        options.mixins = outMixins;
         let componentFactory: any = Component(options);
         return componentFactory(target);
     };
@@ -32,12 +54,12 @@ export function SipGetMixins<V extends Vue>(target: any): SipVueComponentOptions
 let _lastTarget;
 export function SipMixinLife(target: any, mixinkey: string, fn: Function) {
     let mixins = SipGetMixins(target);
-    let newMixin: any = {};
+    let newMixin: any = Object.create(null);
     newMixin[mixinkey] = function () {
         let a = mixins;
         fn.apply(this, arguments);
     };
-    if (_lastTarget !== target){
+    if (_lastTarget !== target) {
         mixins.push(newMixin);
         _lastTarget = target;
     }
@@ -54,39 +76,96 @@ export function SipMixinLife(target: any, mixinkey: string, fn: Function) {
     }
 }
 
-export function SipMixinExtend(target: any, propKey: string, mixinkey: string, content: any) {
+function _newMixinObject(mixinkey: string, propKey: string, options: any) {
+    let newMixin = Object.create(null);
+    if (!propKey) {
+        newMixin[mixinkey] = options;
+    } else {
+        newMixin[mixinkey] = Object.create(null);
+        newMixin[mixinkey][propKey] = options;
+    }
+    return newMixin;
+}
+
+function _hasMixinProp(mixin: any, mixinkey: string, propKey: string): boolean {
+    return !!(mixin[mixinkey] && mixin[mixinkey][propKey]);
+    // if (!propKey) {
+    //     return !!mixin[mixinkey];
+    // } else {
+    //     if (!_hasMixinProp(mixin, mixinkey))
+    //         return false;
+    //     else {
+    //         return !!mixin[mixinkey][propKey];
+    //     }
+    // }
+}
+
+export function SipMixinExtendObject(target: any, mixinkey: string, propKey: string, options: any) {
     let mixins = SipGetMixins(target);
     let len = mixins.length;
-    let newMixin = {};
-    newMixin[mixinkey] = content;
+    let newMixin = _newMixinObject(mixinkey, propKey, options);
+
     if (len == 0 || _lastTarget !== target) {
         mixins.push(newMixin);
         _lastTarget = target;
     } else {
         let endMixin = mixins[len - 1];
-        Object.assign(endMixin, newMixin);
+        if (propKey && _hasMixinProp(endMixin, mixinkey, propKey))
+            mixins.push(newMixin);
+        else if (endMixin[mixinkey])
+            Object.assign(endMixin[mixinkey], newMixin[mixinkey]);
+        else
+            Object.assign(endMixin, newMixin);
     }
 }
 
-export const SipVueProp = Prop;
+export function SipVueProp(options?: (PropOptions | Constructor[] | Constructor)): PropertyDecorator {
+    return function (target: any, propKey: string) {
+        SipMixinExtendObject(target, 'props', propKey, options);
+    };
+}
 
-export const SipVueModel = Model;
+export function SipVueModel(event: string = 'change', options?: (PropOptions | Constructor[] | Constructor)): PropertyDecorator {
+    return function (target: any, propKey: string) {
+        SipMixinExtendObject(target, 'props', propKey, options);
+        SipMixinExtendObject(target, 'model', null, { prop: propKey, event: event });
+    };
+}
 
-export const SipVueWatch = Watch;
+function _getWatchPath(target: any, propKey: string, path: any): string {
+    if (_.isFunction(path)) {
+        let key = ['_sip_watch_computed', propKey].join('_');
+        SipMixinExtendObject(target, 'computed', key, { get:function () {
+            return path.apply(this, arguments);
+        }});
+        return key;
+    } else {
+        return path;
+    }
+}
 
-export const SipVueEmit = Emit;
-
-export const SipStoreState = State;
-
-export const SipStoreGetter = Getter;
-
-export const SipStoreAction = Action;
-
-export const SipStoreMutation = Mutation;
-
-export const SipVueProvide = Provide;
-
-export const SipVueInject = Inject;
+export function SipVueWatch(path: string | string[] | (() => any), options?: WatchOptions): MethodDecorator {
+    const { deep = false, immediate = false } = options || {};
+    return function (target: any, propKey: string) {
+        if (!_.isArray(path))
+            SipMixinExtendObject(target, 'watch', _getWatchPath(target, propKey, path), { handler: target[propKey], deep, immediate });
+        else {
+            _.forEach(path, function (item, idx) {
+                let key = ['_sip_watch_val', propKey].join('_')
+                let keyOld = ['_sip_watch_oldval', propKey].join('_')
+                SipMixinExtendObject(target, 'watch', _getWatchPath(target, propKey, item), {
+                    handler: function (val, oldVal) {
+                        let vals = (this[key] || (this[key] = []));
+                        let valOlds = (this[keyOld] || (this[keyOld] = []));
+                        vals[idx] = val;
+                        valOlds[idx] = oldVal;
+                        target[propKey].call(this, vals, valOlds);
+                    }, deep, immediate
+                });
+            });
+        }
+    };
+}
 
 
 /**使用typescript的get set代替 */
@@ -103,29 +182,44 @@ export const SipVueInject = Inject;
  * @param event 事件名称
  * @param el 是否绑定到el
  */
-export function SipVueOn(event: string, el?: boolean): PropertyDecorator {
+export function SipVueEvent(event: string, once: boolean = false, el: boolean = false): PropertyDecorator {
     let eventFnKey = ['_sip_vue_on', event].join('_');
     return function (target: any, propKey: string) {
-        SipMixinLife(target, 'mounted', function () {
-            let fn = function () {
-                target[propKey].apply(this, arguments);
-            }.bind(this);
-            (this[eventFnKey] || (this[eventFnKey] = [])).push(fn);
-            if (el === true) {
+        if (!el) {
+            SipMixinLife(target, 'created', function () {
+                let fn = function () {
+                    target[propKey].apply(this, arguments);
+                }.bind(this);
+                this[once ? '$once' : '$on'](event, fn);
+            });
+        } else {
+            SipMixinLife(target, 'mounted', function () {
+                let fn = function () {
+                    target[propKey].apply(this, arguments);
+                }.bind(this);
+                (this[eventFnKey] || (this[eventFnKey] = [])).push(fn);
                 this.$el.addEventListener(event, fn);
-            } else {
-                this.$on(event, fn);
-            }
-        });
-        SipMixinLife(target, 'beforeDestroy', function () {
-            let fns = this[eventFnKey];
-            this[eventFnKey] = null;
-            _.forEach(fns, function (fn) {
-                if (el === true)
+            });
+            SipMixinLife(target, 'beforeDestroy', function () {
+                let fns = this[eventFnKey];
+                this[eventFnKey] = null;
+                _.forEach(fns, function (fn) {
                     this.$el.removeEventListener(event, fn);
-                else
-                    this.$off(event, fn);
-            }.bind(this));
-        });
+                }.bind(this));
+            });
+        }
     };
 }
+
+
+export const SipStoreState = State;
+
+export const SipStoreGetter = Getter;
+
+export const SipStoreAction = Action;
+
+export const SipStoreMutation = Mutation;
+
+export const SipVueProvide = Provide;
+
+export const SipVueInject = Inject;

@@ -1,4 +1,5 @@
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import _ from "lodash";
 import { SipHelper } from "../base/sip-helper";
 
 export type SipSortOrder = '' | 'asc' | 'desc' | 'normal';
@@ -32,8 +33,6 @@ export interface SipHttpResult<T=any> {
     statusText: string;
     /**后台出错信息 */
     error: string;
-    /**原来http的response */
-    response: AxiosResponse<T>;
 }
 
 export interface SipHttpSqlConfig extends SipHttpConfig {
@@ -134,8 +133,7 @@ export const SipHttpHelper = {
                     message: data.returnDesc,
                     status: data.returnCode,
                     statusText: data.statusText,
-                    error: data.error,
-                    response: response
+                    error: data.error
                 };
             } else {
                 rs = {
@@ -145,8 +143,7 @@ export const SipHttpHelper = {
                     message: '',
                     status: status,
                     statusText: response.statusText,
-                    error: '',
-                    response: response
+                    error: ''
                 };
             }
             return rs;
@@ -207,7 +204,6 @@ export const SipHttpHelper = {
                 status: response ? response.status : 0,
                 statusText: response && response.statusText,
                 error: response && response.data,
-                response: response
             };
             return rs;
         }
@@ -226,14 +222,16 @@ export const SipHttpHelper = {
 
     },
     serializeResult:function(rs:SipHttpResult){
-        let result:SipHttpResult = Object.assign({}, rs);
-        result.data = result.data ? JSON.stringify(result.data) : result.data;
-        return result;
+        return _.cloneDeep(rs);
+        // let result:SipHttpResult = Object.assign({}, rs);
+        // result.data = result.data ? JSON.stringify(result.data) : result.data;
+        // return result;
     },
     deserializeResult:function(rs:SipHttpResult){
-        let result:SipHttpResult = Object.assign({}, rs);
-        result.data = result.data ? JSON.parse(result.data) : result.data;
-        return result;
+        return _.cloneDeep(rs);
+        // let result:SipHttpResult = Object.assign({}, rs);
+        // result.data = result.data ? JSON.parse(result.data) : result.data;
+        // return result;
     }
 
 };

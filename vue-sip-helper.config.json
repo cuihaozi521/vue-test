@@ -57,17 +57,17 @@
     "prefix": "app",
     "templates": [
         {
-            "active": true,
+            "active": false,
             "files": [
                 {
-                    "active": false,
+                    "active": true,
                     "className": "@{#fileName}",
                     "extend": "ts",
-                    "extendContent": "import { SipComponent, SipVueComponent } from \"@libs/sip\";\n\n@SipVueComponent({})\nexport default class @{className} extends SipComponent {\n\n}",
+                    "extendContent": "import { SipComponent, SipVueComponent, SipLibMixin } from '@libs/sip';\n\n@SipVueComponent({\n    mixins: [SipLibMixin]\n})\nexport default class @{className} extends SipComponent {\n\n}",
                     "fileName": "@{input}.component",
                     "htmlContent": "",
                     "importToModue": "",
-                    "input": "g2-line",
+                    "input": "project-shared",
                     "path": "",
                     "specContent": "import { @{className} } from './@{fileName}';\n\ndescribe('@{className}', () => {\n  it('should create an instance', () => {\n    expect(new @{className}()).toBeTruthy();\n  });\n});\n",
                     "styleContent": "",
@@ -78,14 +78,14 @@
                     }
                 },
                 {
-                    "active": true,
+                    "active": false,
                     "className": "@{#fileName}",
                     "extend": "vue",
                     "extendContent": "<template>\n  <div>\n    <slot></slot>\n  </div>\n</template>\n<script lang=\"ts\" src=\"./@{fileName}.ts\"></script>\n",
                     "fileName": "@{input}.component",
                     "htmlContent": "",
                     "importToModue": "",
-                    "input": "g2-line",
+                    "input": "project-shared",
                     "path": "",
                     "specContent": "import { @{className} } from './@{fileName}';\n\ndescribe('@{className}', () => {\n  it('should create an instance', () => {\n    expect(new @{className}()).toBeTruthy();\n  });\n});\n",
                     "styleContent": "",
@@ -156,11 +156,11 @@
                     "active": true,
                     "className": "@{#fileName}",
                     "extend": "ts",
-                    "extendContent": "import { SipLibMixin, SipMixin } from \"@libs/sip\";\n\nexport const @{className}: SipMixin = {\n    mixins: [SipLibMixin],\n    components: {\n\n    },\n    directives: {\n\n    }\n};",
+                    "extendContent": "import { SipLibMixin, SipMixin } from \"@libs/sip\";\n\nexport const @{className}: SipMixin = {\n    mixins: [SipLibMixin],\n    components: {\n\n    }\n};",
                     "fileName": "@{input}-shared.mixin",
                     "htmlContent": "",
                     "importToModue": "",
-                    "input": "demo-shared",
+                    "input": "project-shared",
                     "path": "",
                     "specContent": "import { @{className} } from './@{fileName}';\n\ndescribe('@{className}', () => {\n  it('should create an instance', () => {\n    expect(new @{className}()).toBeTruthy();\n  });\n});\n",
                     "styleContent": "",
@@ -198,6 +198,103 @@
             ],
             "index": 4,
             "title": "sip-directive"
+        },
+        {
+            "active": true,
+            "files": [
+                {
+                    "active": true,
+                    "className": "@{#fileName}",
+                    "extend": "ts",
+                    "extendContent": "//定义模型(model)\nexport interface @{className} {\n    id?:string;\n    name?:string;\n}",
+                    "fileName": "@{input}.model",
+                    "htmlContent": "",
+                    "importToModue": "",
+                    "input": "storage",
+                    "path": "./@{input}/shared/models",
+                    "specContent": "import { @{className} } from './@{fileName}';\n\ndescribe('@{className}', () => {\n  it('should create an instance', () => {\n    expect(new @{className}()).toBeTruthy();\n  });\n});\n",
+                    "styleContent": "",
+                    "tsContent": "export class @{className} {\n}\n",
+                    "type": "extend",
+                    "typeInfo": {
+                        "extend": true
+                    }
+                },
+                {
+                    "active": false,
+                    "className": "@{#fileName}",
+                    "extend": "ts",
+                    "extendContent": "import { SipComponent, SipVueComponent, SipLibMixin } from '@libs/sip';\n\n@SipVueComponent({\n    mixins: [SipLibMixin]\n})\nexport default class @{className} extends SipComponent {\n\n}",
+                    "fileName": "@{input}.component",
+                    "htmlContent": "",
+                    "importToModue": "",
+                    "input": "storage",
+                    "path": "./@{input}/shared/components",
+                    "specContent": "import { @{className} } from './@{fileName}';\n\ndescribe('@{className}', () => {\n  it('should create an instance', () => {\n    expect(new @{className}()).toBeTruthy();\n  });\n});\n",
+                    "styleContent": "",
+                    "tsContent": "export class @{className} {\n}\n",
+                    "type": "extend",
+                    "typeInfo": {
+                        "extend": true
+                    }
+                },
+                {
+                    "active": false,
+                    "className": "@{#fileName}",
+                    "extend": "vue",
+                    "extendContent": "<template>\n  <div>\n    <slot></slot>\n  </div>\n</template>\n<script lang=\"ts\" src=\"./@{fileName}.ts\"></script>\n",
+                    "fileName": "@{input}.component",
+                    "htmlContent": "",
+                    "importToModue": "",
+                    "input": "storage",
+                    "path": "./@{input}/shared/components",
+                    "specContent": "import { @{className} } from './@{fileName}';\n\ndescribe('@{className}', () => {\n  it('should create an instance', () => {\n    expect(new @{className}()).toBeTruthy();\n  });\n});\n",
+                    "styleContent": "",
+                    "tsContent": "export class @{className} {\n}\n",
+                    "type": "extend",
+                    "typeInfo": {
+                        "extend": true
+                    }
+                },
+                {
+                    "active": false,
+                    "className": "@{#fileName}",
+                    "extend": "ts",
+                    "extendContent": "import { SipService, SipInjectable } from '@libs/sip';\n\n@SipInjectable({ scope: 'business' })\nexport class @{className} extends SipService {\n\n}",
+                    "fileName": "@{input}.service",
+                    "htmlContent": "",
+                    "importToModue": "",
+                    "input": "storage",
+                    "path": "./@{input}/shared/services",
+                    "specContent": "import { @{className} } from './@{fileName}';\n\ndescribe('@{className}', () => {\n  it('should create an instance', () => {\n    expect(new @{className}()).toBeTruthy();\n  });\n});\n",
+                    "styleContent": "",
+                    "tsContent": "export class @{className} {\n}\n",
+                    "type": "extend",
+                    "typeInfo": {
+                        "extend": true
+                    }
+                },
+                {
+                    "active": false,
+                    "className": "@{#fileName}",
+                    "extend": "ts",
+                    "extendContent": "import { SipLibMixin, SipMixin } from \"@libs/sip\";\nimport @{input} from './components/@{input}.component.vue';\n\nexport const @{className}: SipMixin = {\n    mixins: [SipLibMixin],\n    components: {\n        '@{input}': @{input}\n    }\n};",
+                    "fileName": "@{input}-shared.mixin",
+                    "htmlContent": "",
+                    "importToModue": "",
+                    "input": "storage",
+                    "path": "./@{input}/shared",
+                    "specContent": "import { @{className} } from './@{fileName}';\n\ndescribe('@{className}', () => {\n  it('should create an instance', () => {\n    expect(new @{className}()).toBeTruthy();\n  });\n});\n",
+                    "styleContent": "",
+                    "tsContent": "export class @{className} {\n}\n",
+                    "type": "extend",
+                    "typeInfo": {
+                        "extend": true
+                    }
+                }
+            ],
+            "index": 5,
+            "title": "sip-module-shared"
         }
     ]
 }

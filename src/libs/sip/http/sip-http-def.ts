@@ -9,6 +9,7 @@ export interface SipHttpDefConfigBase<T=any> extends SipHttpConfig {
     handle?: (rs: SipHttpResult<T>, target?: any) => SipHttpResult<T>;
     //数据模型
     model?: SipType<any>;
+    sipId?:boolean;
 }
 
 export interface SipHttpDefConfig<T=any> extends SipHttpDefConfigBase<T> {
@@ -17,6 +18,34 @@ export interface SipHttpDefConfig<T=any> extends SipHttpDefConfigBase<T> {
 
 export interface SipHttpDefFunction<Input, Output> {
     (data?: Input, config?: SipHttpDefConfig<Output>): Promise<SipHttpResult<Output>>;
+}
+
+function handleObs(tempConfig, obs){
+    let model = tempConfig.model;
+    let handleFn = tempConfig.handle;
+    let sipId = tempConfig.sipId;
+    if (handleFn || model || sipId) {
+        obs = obs.then((rs) => {
+            let data = rs.data;
+            if (data && sipId){
+                if (SipHelper.isArray(data))
+                    data.forEach(function (item) {
+                        item.sipId = SipHelper.makeAutoId();
+                    });
+                else
+                    data.sipId = SipHelper.makeAutoId();
+                rs.data = data;
+            }
+            if (model && data) {
+                if (SipHelper.isArray(data))
+                    data = data.map(function (item) { return new model(item); });
+                else
+                    data = new model(data);
+                rs.data = data;
+            }
+            return handleFn ? handleFn(rs, this) : rs;;
+        });
+    }
 }
 
 export function SipHttpDef<T=any>(defConfig: SipHttpDefConfig<T>) {
@@ -57,21 +86,7 @@ export function SipHttpDef<T=any>(defConfig: SipHttpDefConfig<T>) {
                             obs = http.get(url, datas, tempConfig);
                             break;
                     }
-                    let model = tempConfig.model;
-                    let handleFn = tempConfig.handle;
-                    if (handleFn || model) {
-                        obs = obs.then((rs) => {
-                            let data = rs.data;
-                            if (model && data) {
-                                if (SipHelper.isArray(data))
-                                    data = data.map(function (item) { return new model(item); });
-                                else
-                                    data = new model(data);
-                                rs.data = data;
-                            }
-                            return handleFn ? handleFn(rs, this) : rs;;
-                        });
-                    }
+                    handleObs(tempConfig, obs);
                     return obs;
                 }.bind(this);
             }
@@ -120,22 +135,7 @@ export function SipHttpSqlDef<T=any>(defConfig: SipHttpSqlDefConfig<T>) {
                             obs = http.sqlList(Object.assign({ pageSize: 999 }, tempParams));
                             break;
                     }
-                    let model = tempParams.model;
-                    let handleFn = tempParams.handle;
-                    if (handleFn || model) {
-                        obs = obs.then((rs) => {
-                            let data = rs.data;
-                            if (model && data) {
-                                if (SipHelper.isArray(data))
-                                    data = data.map(function (item) { return new model(item); });
-                                else
-                                    data = new model(data);
-                                rs.data = data;
-                            }
-                            let ret:any = handleFn ? handleFn(rs, this) : rs;
-                            return ret;
-                        });
-                    }
+                    handleObs(tempParams, obs);
                     return obs;
                 }.bind(this);
             }
@@ -166,6 +166,7 @@ export function SipHttpDictDef<T=any>(defConfig: SipHttpDictDefConfig) {
 
                     let http: SipHttpService = this.$http;
                     let obs: Promise<any> = http.dict(tempCode, tempConStr, tempParams);;
+                    handleObs(tempParams, obs);
                     return obs;
                 }.bind(this);
             }
